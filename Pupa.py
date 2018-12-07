@@ -6,11 +6,15 @@ from download_file import download
 from google_worker import images_links
 from jpg2ascii import ascii_from_image
 
+botnick = sys.argv[1][2:]
+assert botnick == 'Pupa' or botnick == 'Lupa'
+brother = 'Lupa' if botnick == 'Pupa' else 'Pupa'
+
 file_name = 'res/temp.jpg'
 
 server = "irc.ubuntu.com"  # Server
 channel = "#arseni"  # Channel
-botnick = "Pupa"  # Your bots nick
+botnick = botnick  # Your bots nick
 password = ""
 
 ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -87,8 +91,11 @@ def main():
                 ascii_image = ascii_from_image(file_name, 100, '\'.-/ilnmoILO')
                 print(ascii_image)
                 lines = ascii_image.split(sep='\n')
-
-                current_line = 1
+                if botnick == 'Pupa':
+                    current_line = 1
+                else:                
+                    sendmsg(lines[0])
+                    current_line = 2
                 while True:
                     ircmsg = ircsock.recv(2048).decode('utf-8')
 
@@ -98,7 +105,7 @@ def main():
                     if ircmsg.find(f'PRIVMSG {channel}') != -1:
                         name, msg = spli_msg(ircmsg)
                         print(name, msg)
-                        if name == 'Lupa':
+                        if name == brother:
                             time.sleep(0.5)
                             print(current_line)
                             sendmsg(lines[current_line])
@@ -107,7 +114,7 @@ def main():
                             current_line += 2
 
                             if current_line >= len(lines) - 2:
-                                print("Pupa end")
+                                print(botnick + " end")
                                 break
             else:
                 print(message)
