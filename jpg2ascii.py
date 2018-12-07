@@ -1,6 +1,7 @@
 from PIL import Image
 import numpy as np
 
+
 def ascii_from_image(file_name, screen_width=100, charslist=' `\'.-/ilnmoILO', wcf=7/4):
     chars = np.asarray(list(charslist))
 
@@ -17,7 +18,8 @@ def ascii_from_image(file_name, screen_width=100, charslist=' `\'.-/ilnmoILO', w
     img -= img.min()
     img = (1.0 - img/img.max())**GCF*(chars.size-1)
 
-    return ( "\n".join( ("".join(r) for r in chars[img.astype(int)]) ) )
+    return "\n".join(("".join(r) for r in chars[img.astype(int)]))
+
 
 if __name__ == "__main__":
     print(ascii_from_image('res/telochka.jpg'))
