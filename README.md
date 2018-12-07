@@ -10,5 +10,5 @@ pip3 install -r requirements.txt
 
 **Run**
 
-python3 Pupa.py --Pupa
-python3 Pupa.py --Lupa
+python3 PupaLupa.py --Pupa
+python3 PupaLupa.py --Lupa
