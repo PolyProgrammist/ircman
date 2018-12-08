@@ -5,12 +5,13 @@ import socket, re, subprocess, os, time, threading, sys
 from download_file import download
 from google_worker import images_links
 from jpg2ascii import ascii_from_image
+from image_getter import get_correct_image_url
 
 botnick = sys.argv[1][2:]
 assert botnick == 'Pupa' or botnick == 'Lupa'
 brother = 'Lupa' if botnick == 'Pupa' else 'Pupa'
 
-file_name = 'res/temp.jpg'
+file_name = 'res/' + botnick + 'temp.png'
 
 server = "irc.ubuntu.com"  # Server
 channel = "#arseni"  # Channel
@@ -85,8 +86,8 @@ def main():
                 req = message.split('покажи мне ', 1)[1]
 
                 urls = images_links(req)
-                url = urls[1]
-
+                url = get_correct_image_url(urls, file_name)
+                print(url)
                 download(url, file_name)
                 ascii_image = ascii_from_image(file_name, 100, '\'.-/ilnmoILO')
                 print(ascii_image)
