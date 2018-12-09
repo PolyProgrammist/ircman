@@ -25,21 +25,23 @@ auth_str = "USER " + botnick + " " + botnick + " " + botnick + " " + botnick + "
 nick_str = "NICK " + botnick + "\n"
 iden_str = "nickserv identify " + password + "\r\n"
 
-ircsock.send(auth_str.encode())  # user authentication
-ircsock.send(nick_str.encode())  # assign the nick to the bot
-ircsock.send(iden_str.encode())
+ircsock.sendall(auth_str.encode())  # user authentication
+ircsock.sendall(nick_str.encode())  # assign the nick to the bot
+ircsock.sendall(iden_str.encode())
 
 
 def ping():  # respond to server Pings.
-    ircsock.send(("PONG :pingis\n").encode())
+    ircsock.sendall(("PONG :pingis\n").encode())
 
 
 def sendmsg(msg):  # sends messages to the channel.
-    ircsock.send(("PRIVMSG " + channel + " :" + msg + "\n").encode())
+    message = "PRIVMSG " + channel + " :" + msg + "\n"
+    encoded = message.encode()
+    ircsock.sendall(encoded)
 
 
 def joinchan(chan):  # join channel(s).
-    ircsock.send(("JOIN " + chan + "\n").encode())
+    ircsock.sendall(("JOIN " + chan + "\n").encode())
 
 
 def spli_msg(s):
@@ -78,7 +80,7 @@ def main():
             ping()
 
         # look for PRIVMSG lines as these are messages in the channel or sent to the bot
-        # sendmsg("Или тебе норм?")
+        # sendallmsg("Или тебе норм?")
         if ircmsg.find(f'PRIVMSG {channel}') != -1:
             name, message = spli_msg(ircmsg)
 
