@@ -1,20 +1,36 @@
 # Import some necessary libraries.
+import random
 import socket, re, subprocess, os, time, threading, sys
 
 # Some basic variables used to configure the bot
 from download_file import download
 from google_worker import images_links
 from jpg2ascii import ascii_from_image
-from image_getter import get_correct_image_url
 
-botnick = sys.argv[1][2:]
+botnick = 'Pupa'
+command_ask = 'Лупа и Пупа, нарисуйте мне'
+command_set_color = 'set color'
+command_set_weight = 'set weight'
+weight = 100
+
+time_sleep = 1
+help = [
+    'I need somebody!',
+    'Not just anybody!',
+    'You know I need someone!!!',
+    f' Запрос на рисование: {command_ask} что-нибудь',
+    f' Установить новый цвет: {command_set_color} \'.-/ilnmoILO',
+    f' Установить ширину картинки: {command_set_weight} 100',
+    'Послушать битлов и получить справку: Help!'
+]
+
 assert botnick == 'Pupa' or botnick == 'Lupa'
 brother = 'Lupa' if botnick == 'Pupa' else 'Pupa'
 
-file_name = 'res/' + botnick + 'temp.png'
+file_name = 'res/temp'
 
 server = "irc.ubuntu.com"  # Server
-channel = "#arseni"  # Channel
+channel = "#test-bot"  # Channel
 botnick = botnick  # Your bots nick
 password = ""
 
@@ -25,26 +41,35 @@ auth_str = "USER " + botnick + " " + botnick + " " + botnick + " " + botnick + "
 nick_str = "NICK " + botnick + "\n"
 iden_str = "nickserv identify " + password + "\r\n"
 
-ircsock.sendall(auth_str.encode())  # user authentication
-ircsock.sendall(nick_str.encode())  # assign the nick to the bot
-ircsock.sendall(iden_str.encode())
+ircsock.send(auth_str.encode())  # user authentication
+ircsock.send(nick_str.encode())  # assign the nick to the bot
+ircsock.send(iden_str.encode())
+
+request = 'Апельсин'
+color_theme = '\'.-/ilnmoILO'
+current_line = 0
+lines = []
+state = 0
+help_counter = 0
+
+
+# 0 - ожидание запроса
+# 1 - Лупа качает, Пупа ждёт ссылку
 
 
 def ping():  # respond to server Pings.
-    ircsock.sendall(("PONG :pingis\n").encode())
+    ircsock.send(("PONG :pingis\n").encode())
 
 
 def sendmsg(msg):  # sends messages to the channel.
-    message = "PRIVMSG " + channel + " :" + msg + "\n"
-    encoded = message.encode()
-    ircsock.sendall(encoded)
+    ircsock.send(("PRIVMSG " + channel + " :" + msg + "\n").encode())
 
 
 def joinchan(chan):  # join channel(s).
-    ircsock.sendall(("JOIN " + chan + "\n").encode())
+    ircsock.send(("JOIN " + chan + "\n").encode())
 
 
-def spli_msg(s):
+def split_msg(s):
     name = s.split('!', 1)[0][1:]
     message = s.split('PRIVMSG', 1)[1].split(':', 1)[1]
     return name, message
@@ -53,6 +78,7 @@ def spli_msg(s):
 # main functions of the bot
 def main():
     # start by joining the channel. --TO DO: allow joining list of channels
+    global state, request, current_line, lines, help_counter, color_theme, weight
     joinchan(channel)
 
     # open the chat log file if it exists and delete it to start fresh.
@@ -60,7 +86,7 @@ def main():
     #     temp.write("")
 
     # start infinite loop to continually check for and receive new info from server
-    while 1:
+    while True:
         # clear ircmsg value every time
         ircmsg = ""
 
@@ -71,58 +97,129 @@ def main():
         ircmsg = ircmsg.strip('\n\r')
 
         # print received message to stdout (mostly for debugging).
-        if ircmsg.find(f'PRIVMSG {channel}') != -1:
-            print(ircmsg)
-            print()
+        # if ircmsg.find(f'PRIVMSG {channel}') != -1:
+        #     print(ircmsg)
+        #     print()
 
         # repsond to pings so server doesn't think we've disconnected
         if ircmsg.find('PING :') != -1:
             ping()
 
-        # look for PRIVMSG lines as these are messages in the channel or sent to the bot
-        # sendallmsg("Или тебе норм?")
         if ircmsg.find(f'PRIVMSG {channel}') != -1:
-            name, message = spli_msg(ircmsg)
+            name, message = split_msg(ircmsg)
+            if message == 'Стоямба!':
+                print('Стоп')
+                time.sleep(time_sleep)
+                state = 0
+                if botnick == 'Lupa':
+                    sendmsg('Понял')
+                else:
+                    sendmsg('Принял')
 
-            if message.find('Лупа, покажи мне ') != -1:
-                req = message.split('покажи мне ', 1)[1]
-
-                urls = images_links(req)
-                url = get_correct_image_url(urls, file_name)
-                print(url)
-                download(url, file_name)
-                ascii_image = ascii_from_image(file_name, 100, '\'.-/ilnmoILO')
-                print(ascii_image)
-                lines = ascii_image.split(sep='\n')
-                if botnick == 'Pupa':
-                    current_line = 1
-                else:                
-                    sendmsg(lines[0])
-                    current_line = 2
-                while True:
-                    ircmsg = ircsock.recv(2048).decode('utf-8')
-
-                    if ircmsg.find('PING :') != -1:
-                        ping()
-
-                    if ircmsg.find(f'PRIVMSG {channel}') != -1:
-                        name, msg = spli_msg(ircmsg)
-                        print(name, msg)
-                        if name == brother:
-                            time.sleep(0.5)
-                            print(current_line)
+        if state == 3:
+            if ircmsg.find(f'PRIVMSG {channel}') != -1:
+                name, message = split_msg(ircmsg)
+                print("$$$" + message)
+                if name == brother:
+                    if message == 'Я всё':
+                        state = 0
+                        sendmsg('Мы сделали это, бро')
+                    else:
+                        if current_line == len(lines) - 1:
+                            time.sleep(time_sleep)
+                            state = 0
+                            sendmsg('Я всё')
+                        elif current_line < len(lines):
+                            time.sleep(time_sleep)
                             sendmsg(lines[current_line])
-                            print("sended")
-
                             current_line += 2
 
-                            if current_line >= len(lines) - 2:
-                                print(botnick + " end")
-                                break
-            else:
-                print(message)
-            print("-"*100)
+        if state == 2:
+            # print(botnick*10)
+            if ircmsg.find(f'PRIVMSG {channel}') != -1:
+                name, message = split_msg(ircmsg)
+                if name == 'Pupa' and message.find('Пойдёт') != -1:
+                    print('Lupa begin drawing')
+                    time.sleep(time_sleep)
+                    state = 3
+                    current_line = 0
+                    sendmsg(lines[current_line])
+                    current_line = 2
+                    continue
 
-            # sendmsg(f'{name} siad "{message}", bit he is stupid, don`t  listen him')
+        if state == 1:
+            if botnick == 'Lupa':
+                print('Lupa load urls')
+                urls = images_links(request)
+                url = urls[random.randint(0, 5)]
+                download(url, f'{file_name}-{botnick}.jpg')
+                lines = ascii_from_image(f'{file_name}-{botnick}.jpg', weight, color_theme).split(sep='\n')
+
+                sendmsg(f'Пупа, как тебе эта {url}?')
+                state = 2
+                continue
+
+            else:
+                if ircmsg.find(f'PRIVMSG {channel}') != -1:
+                    name, message = split_msg(ircmsg)
+                    if name == 'Lupa' and message.find('эта ') != -1:
+                        print('Pupa get url from Lupa')
+
+                        url = message.split('эта ')[1][:-1]
+                        download(url, f'{file_name}-{botnick}.jpg')
+                        lines = ascii_from_image(f'{file_name}-{botnick}.jpg', weight, color_theme).split(sep='\n')
+                        time.sleep(time_sleep)
+
+                        print('Пупа принял ссылку', len(lines))
+                        time.sleep(time_sleep)
+                        sendmsg(f'Пойдёт')
+                        state = 3
+                        current_line = 1
+                        continue
+
+        if state == 0:
+            if ircmsg.find(f'PRIVMSG {channel}') != -1:
+                name, message = split_msg(ircmsg)
+
+                if message.find(command_ask) != -1 and name != brother:
+                    request = message.split(command_ask, 1)[1]
+
+                    if botnick == 'Lupa':
+                        sendmsg('Понял')
+                        state = 1
+                        continue
+                    else:
+                        sendmsg('Принял')
+                        time.sleep(time_sleep)
+                        state = 1
+                        continue
+
+        if ircmsg.find(f'PRIVMSG {channel}') != -1:
+            name, message = split_msg(ircmsg)
+            if message.find(command_set_weight) != -1 and name != brother:
+                weight = int(message.split(command_set_weight)[1][1:])
+                if botnick == 'Lupa':
+                    sendmsg('Понял')
+                else:
+                    sendmsg('Принял')
+
+        if ircmsg.find(f'PRIVMSG {channel}') != -1:
+            name, message = split_msg(ircmsg)
+            if message == 'Help!' and name != brother:
+                if botnick == 'Lupa' and help_counter % 2 == 0:
+                    sendmsg(help[help_counter % len(help)])
+                if botnick == 'Pupa' and help_counter % 2 == 1:
+                    sendmsg(help[help_counter % len(help)])
+                help_counter += 1
+
+        if ircmsg.find(f'PRIVMSG {channel}') != -1:
+            name, message = split_msg(ircmsg)
+            if message.find(command_set_color) != -1 and name != brother:
+                print(message.split(command_set_color)[1][1:])
+                color_theme = message.split(command_set_color)[1][1:]
+                if botnick == 'Lupa':
+                    sendmsg('Понял')
+                else:
+                    sendmsg('Принял')
 
 main()
