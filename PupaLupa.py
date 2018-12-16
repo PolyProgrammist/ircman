@@ -28,7 +28,7 @@ help = [
 assert botnick == 'Pupa' or botnick == 'Lupa'
 brother = 'Lupa' if botnick == 'Pupa' else 'Pupa'
 
-file_name = 'res/temp'
+file_name = 'res/' + botnick + 'temp'
 
 server = "irc.ubuntu.com"  # Server
 channel = '#test-bot'
