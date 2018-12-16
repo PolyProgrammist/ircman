@@ -36,16 +36,21 @@ channel = '#test-bot'
 botnick = botnick  # Your bots nick
 password = ""
 
+print('Starting ' + botnick)
 ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ircsock.connect((server, 6667))  # Here we connect to the server using the port 6667
+print('Connected ' + botnick)
 
 auth_str = "USER " + botnick + " " + botnick + " " + botnick + " " + botnick + "\n"
 nick_str = "NICK " + botnick + "\n"
 iden_str = "nickserv identify " + password + "\r\n"
 
 ircsock.sendall(auth_str.encode())  # user authentication
+print('Authentication sent ' + botnick)
 ircsock.sendall(nick_str.encode())  # assign the nick to the bot
+print('Nick sent ' + botnick)
 ircsock.sendall(iden_str.encode())
+print('Identification sent ' + botnick)
 
 request = 'Апельсин'
 color_theme = '\'.-/ilnmoILO'
