@@ -5,15 +5,16 @@ import socket, re, subprocess, os, time, threading, sys
 # Some basic variables used to configure the bot
 from download_file import download
 from google_worker import images_links
+from image_getter import get_correct_image_url
 from jpg2ascii import ascii_from_image
 
-botnick = 'Pupa'
-command_ask = 'Лупа и Пупа, нарисуйте мне'
+botnick = 'Lupa'
+command_ask = 'Lupa and Pupa, do some magic'
 command_set_color = 'set color'
 command_set_weight = 'set weight'
 weight = 100
 
-time_sleep = 1
+time_sleep = 0.2
 help = [
     'I need somebody!',
     'Not just anybody!',
@@ -30,7 +31,8 @@ brother = 'Lupa' if botnick == 'Pupa' else 'Pupa'
 file_name = 'res/temp'
 
 server = "irc.ubuntu.com"  # Server
-channel = "#test-bot"  # Channel
+channel = '#test-bot'
+# channel = "#2448"  # Channel
 botnick = botnick  # Your bots nick
 password = ""
 
@@ -151,7 +153,7 @@ def main():
             if botnick == 'Lupa':
                 print('Lupa load urls')
                 urls = images_links(request)
-                url = urls[random.randint(0, 5)]
+                url = get_correct_image_url(urls, f'{botnick}-lalala.jpg')
                 download(url, f'{file_name}-{botnick}.jpg')
                 lines = ascii_from_image(f'{file_name}-{botnick}.jpg', weight, color_theme).split(sep='\n')
 
@@ -183,6 +185,8 @@ def main():
 
                 if message.find(command_ask) != -1 and name != brother:
                     request = message.split(command_ask, 1)[1]
+                    if request == '':
+                        request = 'Мэрлин Монро'
 
                     if botnick == 'Lupa':
                         sendmsg('Понял')
