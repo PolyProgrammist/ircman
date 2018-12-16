@@ -14,7 +14,7 @@ command_set_color = 'set color'
 command_set_weight = 'set weight'
 weight = 100
 
-time_sleep = 0.2
+time_sleep = 1
 help = [
     'I need somebody!',
     'Not just anybody!',
@@ -101,6 +101,7 @@ def main():
 
         # set ircmsg to new data received from server
         ircmsg = ircsock.recv(2048).decode('utf-8')
+        print('received ' + botnick)
 
         # remove any line breaks
         ircmsg = ircmsg.strip('\n\r')
