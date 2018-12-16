@@ -8,7 +8,7 @@ from google_worker import images_links
 from image_getter import get_correct_image_url
 from jpg2ascii import ascii_from_image
 
-botnick = 'Lupa'
+botnick = sys.argv[1][2:]
 command_ask = 'Lupa and Pupa, do some magic'
 command_set_color = 'set color'
 command_set_weight = 'set weight'
