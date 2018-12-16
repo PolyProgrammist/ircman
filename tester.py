@@ -1,8 +1,12 @@
 import socket
 from time import sleep
 import filecmp
+import os
 
-logging_file = 'logging.txt'
+if not os.path.exists('res'):
+    os.mkdir('res')
+
+logging_file = 'res/logging.txt'
 with open(logging_file, 'w') as fout:
     pass
 

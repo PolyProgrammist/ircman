@@ -48,7 +48,10 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            python tester.py
+            python PupaLupa.py --Lupa&
+            python PupaLupa.py --Pupa&
+            python tester.py 
+
 
       - store_artifacts:
           path: test-reports
